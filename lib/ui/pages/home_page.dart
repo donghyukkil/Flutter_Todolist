@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import 'package:todolist/core/viewmodels/task_viewmodel.dart';
 import 'package:todolist/data/models/task.dart';
+import 'package:todolist/utils/dialog_utils.dart';
 
 class HomePage extends StatelessWidget {
   final TaskViewModel taskViewModel = Get.find();
@@ -59,7 +60,8 @@ class HomePage extends StatelessWidget {
                         IconButton(
                           icon: const Icon(Icons.edit),
                           onPressed: () {
-                            _editTaskTitleDialog(context, task);
+                            DialogUtils.showEditTaskDialog(
+                                context, task, taskViewModel);
                           },
                         ),
                         IconButton(
@@ -76,38 +78,5 @@ class HomePage extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  void _editTaskTitleDialog(BuildContext context, Task task) {
-    TextEditingController editTextController =
-        TextEditingController(text: task.title);
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Center(child: Text('Edit Task')),
-            content: TextField(
-              controller: editTextController,
-              decoration: const InputDecoration(
-                labelText: 'Task',
-              ),
-            ),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Cancel')),
-              TextButton(
-                  onPressed: () {
-                    if (editTextController.text.isNotEmpty) {
-                      taskViewModel.editTask(task.id, editTextController.text);
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: const Text('Save'))
-            ],
-          );
-        });
   }
 }
