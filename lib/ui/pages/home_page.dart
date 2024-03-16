@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'package:todolist/core/viewmodels/task_viewmodel.dart';
-import 'package:todolist/data/models/task.dart';
 import 'package:todolist/utils/dialog_utils.dart';
 
 class HomePage extends StatelessWidget {
@@ -26,17 +25,13 @@ class HomePage extends StatelessWidget {
               decoration: InputDecoration(
                   labelText: 'Enter your task',
                   suffixIcon: IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed: () {
-                        if (textEditingController.text.isNotEmpty) {
-                          taskViewModel.addTask(
-                            Task(
-                                id: DateTime.now().millisecondsSinceEpoch,
-                                title: textEditingController.text),
-                          );
-                          textEditingController.clear();
-                        }
-                      })),
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                      taskViewModel
+                          .addTaskIfNotEmpty(textEditingController.text);
+                      textEditingController.clear();
+                    },
+                  )),
             ),
           ),
           Expanded(

@@ -1,5 +1,5 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:todolist/data/models/task.dart';
 
 class TaskViewModel extends GetxController {
@@ -7,6 +7,21 @@ class TaskViewModel extends GetxController {
 
   void addTask(Task task) {
     tasks.add(task);
+  }
+
+  void addTaskIfNotEmpty(String title) {
+    if (title.isNotEmpty) {
+      final task = Task(
+        id: DateTime.now().millisecondsSinceEpoch,
+        title: title,
+      );
+      addTask(task);
+      Get.snackbar("Success", "Task added successfully!",
+          backgroundColor: Colors.green, colorText: Colors.white);
+    } else {
+      Get.snackbar("Error", "Task title cannot be empty.",
+          backgroundColor: Colors.red, colorText: Colors.white);
+    }
   }
 
   void editTask(int id, String newTitle) {
@@ -20,7 +35,8 @@ class TaskViewModel extends GetxController {
   }
 
   void toggleTaskStatus(int id) {
-    tasks.firstWhere((task) => task.id == id).toggleDone();
+    Task task = tasks.firstWhere((task) => task.id == id);
+    task.toggleDone();
     tasks.refresh();
   }
 }
