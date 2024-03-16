@@ -7,7 +7,8 @@ class DialogUtils {
   static void showEditTaskDialog(
       BuildContext context, Task task, TaskViewModel taskViewModel) {
     TextEditingController editTextController =
-        TextEditingController(text: task.title);
+        TextEditingController(text: task.title.value);
+
     showDialog(
       context: context,
       builder: (context) {

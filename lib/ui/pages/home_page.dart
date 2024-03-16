@@ -39,33 +39,42 @@ class HomePage extends StatelessWidget {
                   itemCount: taskViewModel.tasks.length,
                   itemBuilder: (context, index) {
                     final task = taskViewModel.tasks[index];
-                    return ListTile(
-                      title: Text(task.title,
-                          style: task.isDone
-                              ? const TextStyle(
-                                  decoration: TextDecoration.lineThrough)
-                              : null),
-                      leading: Checkbox(
-                        value: task.isDone,
-                        onChanged: (newValue) {
-                          taskViewModel.toggleTaskStatus(task.id);
-                        },
+
+                    return Card(
+                      margin: const EdgeInsets.all(8.0),
+                      child: ListTile(
+                        title: Text(task.title.value,
+                            style: task.isDone.value
+                                ? const TextStyle(
+                                    decoration: TextDecoration.lineThrough)
+                                : null),
+                        leading: Checkbox(
+                          value: task.isDone.value,
+                          onChanged: (bool? newValue) {
+                            if (newValue != null) {
+                              taskViewModel.toggleTaskStatus(task.id);
+                            }
+                          },
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () {
+                                DialogUtils.showEditTaskDialog(
+                                    context, task, taskViewModel);
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                taskViewModel.deleteTask(task.id);
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () {
-                            DialogUtils.showEditTaskDialog(
-                                context, task, taskViewModel);
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            taskViewModel.deleteTask(task.id);
-                          },
-                        ),
-                      ]),
                     );
                   },
                 )),

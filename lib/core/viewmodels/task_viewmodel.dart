@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:todolist/data/models/task.dart';
 
 class TaskViewModel extends GetxController {
@@ -25,9 +26,11 @@ class TaskViewModel extends GetxController {
   }
 
   void editTask(int id, String newTitle) {
-    Task task = tasks.firstWhere((task) => task.id == id);
-    task.title = newTitle;
-    tasks.refresh();
+    Task? task = tasks.firstWhereOrNull((task) => task.id == id);
+
+    if (task != null) {
+      task.setTitle(newTitle);
+    }
   }
 
   void deleteTask(int id) {
