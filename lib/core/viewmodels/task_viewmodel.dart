@@ -16,6 +16,7 @@ class TaskViewModel extends GetxController {
         id: DateTime.now().millisecondsSinceEpoch,
         title: title,
       );
+
       addTask(task);
       Get.snackbar("Success", "Task added successfully!",
           backgroundColor: Colors.green, colorText: Colors.white);
@@ -26,10 +27,9 @@ class TaskViewModel extends GetxController {
   }
 
   void editTask(int id, String newTitle) {
-    Task? task = tasks.firstWhereOrNull((task) => task.id == id);
-
-    if (task != null) {
-      task.setTitle(newTitle);
+    int index = tasks.indexWhere((task) => task.id == id);
+    if (index != -1) {
+      tasks[index] = tasks[index].copyWith(title: newTitle);
     }
   }
 
@@ -38,8 +38,10 @@ class TaskViewModel extends GetxController {
   }
 
   void toggleTaskStatus(int id) {
-    Task task = tasks.firstWhere((task) => task.id == id);
-    task.toggleDone();
-    tasks.refresh();
+    int index = tasks.indexWhere((task) => task.id == id);
+
+    if (index != -1) {
+      tasks[index] = tasks[index].copyWith(isDone: !tasks[index].isDone.value);
+    }
   }
 }
