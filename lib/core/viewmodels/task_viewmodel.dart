@@ -44,4 +44,13 @@ class TaskViewModel extends GetxController {
       tasks[index] = tasks[index].copyWith(isDone: !tasks[index].isDone.value);
     }
   }
+
+  void reorderTask(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+
+    final Task task = tasks.removeAt(oldIndex);
+    tasks.insert(newIndex, task);
+  }
 }

@@ -61,11 +61,12 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildTaskList(List<Task> tasks) {
-    return ListView.builder(
+    return ReorderableListView.builder(
       itemCount: tasks.length,
       itemBuilder: (context, index) {
         final task = tasks[index];
         return Card(
+          key: ValueKey(task.id),
           margin: const EdgeInsets.all(8.0),
           child: ListTile(
             title: Text(
@@ -98,6 +99,9 @@ class HomePage extends StatelessWidget {
             ),
           ),
         );
+      },
+      onReorder: (int oldIndex, int newIndex) {
+        taskViewModel.reorderTask(oldIndex, newIndex);
       },
     );
   }
