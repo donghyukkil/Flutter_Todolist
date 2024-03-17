@@ -7,7 +7,7 @@ class DialogUtils {
   static void showEditTaskDialog(
       BuildContext context, Task task, TaskViewModel taskViewModel) {
     TextEditingController editTextController =
-        TextEditingController(text: task.title.value);
+        TextEditingController(text: task.title);
 
     showDialog(
       context: context,
@@ -35,6 +35,41 @@ class DialogUtils {
                 },
                 child: const Text('Save')),
           ],
+          actionsAlignment: MainAxisAlignment.center,
+        );
+      },
+    );
+  }
+
+  static void showDeleteConfirmation(
+      BuildContext context, int taskId, TaskViewModel taskViewModel) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            "Delete Task",
+            textAlign: TextAlign.center,
+          ),
+          content: const Text(
+            "Are you sure you want to delete this task?",
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("Cancel"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text("Delete"),
+              onPressed: () {
+                taskViewModel.deleteTask(taskId);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+          actionsAlignment: MainAxisAlignment.center,
         );
       },
     );
