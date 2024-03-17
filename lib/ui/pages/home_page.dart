@@ -4,11 +4,36 @@ import 'package:todolist/core/viewmodels/task_viewmodel.dart';
 import 'package:todolist/utils/dialog_utils.dart';
 import 'package:todolist/data/models/task.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   final TaskViewModel taskViewModel = Get.find();
   final TextEditingController textEditingController = TextEditingController();
 
-  HomePage({super.key});
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        taskViewModel.reloadTasks();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    textEditingController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +42,9 @@ class HomePage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('To-do List'),
-          bottom: const TabBar(
-            tabs: [
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: const [
               Tab(icon: Icon(Icons.list), text: 'In Progress'),
               Tab(icon: Icon(Icons.done_all), text: 'Completed'),
             ],
@@ -35,8 +61,8 @@ class HomePage extends StatelessWidget {
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.add),
                       onPressed: () {
-                        taskViewModel
-                            .addTaskIfNotEmpty(textEditingController.text);
+                        taskViewModel.addTaskIfNotEmpty(
+                            textEditingController.text, _tabController.index);
                         textEditingController.clear();
                       },
                     )),
@@ -44,12 +70,13 @@ class HomePage extends StatelessWidget {
             ),
             Expanded(
               child: TabBarView(
+                controller: _tabController,
                 children: [
                   Obx(() => _buildTaskList(taskViewModel.tasks
-                      .where((task) => !task.isDone.value)
+                      .where((task) => task.tab == 0 && !task.isDone)
                       .toList())),
                   Obx(() => _buildTaskList(taskViewModel.tasks
-                      .where((task) => task.isDone.value)
+                      .where((task) => task.tab == 1 && task.isDone)
                       .toList())),
                 ],
               ),
@@ -70,13 +97,13 @@ class HomePage extends StatelessWidget {
           margin: const EdgeInsets.all(8.0),
           child: ListTile(
             title: Text(
-              task.title.value,
-              style: task.isDone.value
+              task.title,
+              style: task.isDone
                   ? const TextStyle(decoration: TextDecoration.lineThrough)
                   : null,
             ),
             leading: Checkbox(
-              value: task.isDone.value,
+              value: task.isDone,
               onChanged: (bool? newValue) {
                 if (newValue != null) {
                   taskViewModel.toggleTaskStatus(task.id);
@@ -93,7 +120,8 @@ class HomePage extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete),
-                  onPressed: () => taskViewModel.deleteTask(task.id),
+                  onPressed: () => DialogUtils.showDeleteConfirmation(
+                      context, task.id, taskViewModel),
                 ),
               ],
             ),

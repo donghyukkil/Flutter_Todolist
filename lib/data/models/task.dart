@@ -1,30 +1,39 @@
-import 'package:get/get.dart';
+import 'package:hive/hive.dart';
 
-class Task {
+part 'task.g.dart';
+
+@HiveType(typeId: 1)
+class Task extends HiveObject {
+  @HiveField(0)
   final int id;
-  final RxString title;
-  final RxBool isDone;
 
-  Task({required this.id, required String title, bool isDone = false})
-      : title = title.obs,
-        isDone = RxBool(isDone);
+  @HiveField(1)
+  String title;
 
-  Task copyWith({
-    String? title,
-    bool? isDone,
-  }) {
-    return Task(
-      id: id,
-      title: title ?? this.title.value,
-      isDone: isDone ?? this.isDone.value,
-    );
-  }
+  @HiveField(2)
+  bool isDone;
+
+  @HiveField(3)
+  int order;
+
+  @HiveField(4)
+  int tab;
+
+  Task({
+    required this.id,
+    required this.title,
+    this.isDone = false,
+    required this.order,
+    required this.tab,
+  });
 
   void setTitle(String newTitle) {
-    title.value = newTitle;
+    title = newTitle;
+    save();
   }
 
   void toggleDone() {
-    isDone.toggle();
+    isDone = !isDone;
+    save();
   }
 }
