@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:todolist/core/viewmodels/task_viewmodel.dart';
 import 'package:todolist/utils/dialog_utils.dart';
 import 'package:todolist/data/models/task.dart';
@@ -21,11 +22,6 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        taskViewModel.reloadTasks();
-      }
-    });
   }
 
   @override
@@ -129,7 +125,7 @@ class _HomePageState extends State<HomePage>
         );
       },
       onReorder: (int oldIndex, int newIndex) {
-        taskViewModel.reorderTask(oldIndex, newIndex);
+        taskViewModel.reorderTask(oldIndex, newIndex, _tabController.index);
       },
     );
   }

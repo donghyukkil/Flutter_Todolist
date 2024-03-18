@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'package:todolist/core/viewmodels/task_viewmodel.dart';
 import 'package:todolist/data/models/task.dart';
@@ -22,18 +23,21 @@ class DialogUtils {
           ),
           actions: [
             TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Cancel')),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
             TextButton(
-                onPressed: () {
-                  if (editTextController.text.isNotEmpty) {
-                    taskViewModel.editTask(task.id, editTextController.text);
-                    Navigator.of(context).pop();
-                  }
-                },
-                child: const Text('Save')),
+              onPressed: () {
+                if (editTextController.text.isNotEmpty) {
+                  taskViewModel.editTask(task.id, editTextController.text);
+                  Navigator.of(context).pop();
+                  showSnackbar('Task edited successfully');
+                }
+              },
+              child: const Text('Save'),
+            ),
           ],
           actionsAlignment: MainAxisAlignment.center,
         );
@@ -72,6 +76,16 @@ class DialogUtils {
           actionsAlignment: MainAxisAlignment.center,
         );
       },
+    );
+  }
+
+  static void showSnackbar(String message, {bool isError = false}) {
+    Get.snackbar(
+      isError ? "Error" : "Success",
+      message,
+      backgroundColor: isError ? Colors.red : Colors.green,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
     );
   }
 }

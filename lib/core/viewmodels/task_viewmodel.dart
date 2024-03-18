@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-
 import 'package:todolist/data/models/task.dart';
+import 'package:todolist/utils/dialog_utils.dart';
 
 class TaskViewModel extends GetxController {
   var tasks = <Task>[].obs;
@@ -20,51 +20,44 @@ class TaskViewModel extends GetxController {
   }
 
   Future<void> _loadTasks() async {
-    final box = await Hive.openBox<Task>('tasks');
-    tasks.assignAll(box.values);
+    final box = await _openBox();
+    final orderedTasks = box.values.toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
+    tasks.assignAll(orderedTasks);
   }
 
-  int _getNewId() {
-    if (tasks.isEmpty) {
-      return 1;
-    } else {
-      final maxIdTask = tasks.reduce(
-          (currentMax, task) => currentMax.id > task.id ? currentMax : task);
-
-      return maxIdTask.id + 1;
-    }
+  Future<Box<Task>> _openBox() async {
+    return await Hive.openBox<Task>('tasks');
   }
 
-  void addTask(Task task) async {
-    final box = await Hive.openBox<Task>('tasks');
-    await box.add(task);
-    tasks.add(task);
+  int _getMaxValue(List<int> values, int fallback) {
+    return values.isEmpty ? fallback : values.reduce(max) + 1;
   }
 
   void addTaskIfNotEmpty(String title, int tab) async {
     if (title.isNotEmpty) {
-      final int newId = _getNewId();
-      final int order = tasks.length;
+      final box = await _openBox();
+      final int newId = _getMaxValue(tasks.map((task) => task.id).toList(), 0);
+      final int newOrder =
+          _getMaxValue(tasks.map((task) => task.order).toList(), 0);
+
       final task = Task(
         id: newId,
         title: title,
         isDone: false,
-        order: order,
+        order: newOrder,
         tab: tab,
       );
 
-      final box = await Hive.openBox<Task>('tasks');
       await box.add(task);
       tasks.add(task);
-      tasks.sort((a, b) => a.id.compareTo(b.id));
     } else {
-      Get.snackbar("Error", "Task title cannot be empty.",
-          backgroundColor: Colors.red, colorText: Colors.white);
+      DialogUtils.showSnackbar("Task title cannot be empty.", isError: true);
     }
   }
 
   void editTask(int id, String newTitle) async {
-    final box = await Hive.openBox<Task>('tasks');
+    final box = await _openBox();
     final Task task = box.values.firstWhere((t) => t.id == id);
     task.title = newTitle;
     task.save();
@@ -72,7 +65,7 @@ class TaskViewModel extends GetxController {
   }
 
   void deleteTask(int id) async {
-    final box = await Hive.openBox<Task>('tasks');
+    final box = await _openBox();
     final taskKey = box.keys.firstWhere(
       (key) => box.get(key)?.id == id,
       orElse: () => null,
@@ -81,41 +74,47 @@ class TaskViewModel extends GetxController {
     if (taskKey != null) {
       await box.delete(taskKey);
       tasks.removeWhere((task) => task.id == id);
-
-      Get.snackbar("Deleted", "Task has been deleted successfully.",
-          backgroundColor: Colors.green, colorText: Colors.white);
+      DialogUtils.showSnackbar("Task has been deleted successfully.");
     }
   }
 
   void toggleTaskStatus(int id) async {
-    final box = await Hive.openBox<Task>('tasks');
+    final box = await _openBox();
     final Task task = box.values.firstWhere(
       (t) => t.id == id,
     );
     task.isDone = !task.isDone;
     task.tab = task.isDone ? 1 : 0;
-    task.save();
+    await task.save();
+    DialogUtils.showSnackbar("Task status updated", isError: false);
     tasks.refresh();
   }
 
-  void reorderTask(int oldIndex, int newIndex) async {
+  void reorderTask(int oldIndex, int newIndex, int tab) async {
+    List<Task> currentTabTasks =
+        tasks.where((task) => task.tab == tab).toList();
+    List<Task> otherTabTasks = tasks.where((task) => task.tab != tab).toList();
+
     if (oldIndex < newIndex) {
       newIndex -= 1;
     }
-    final Task task = tasks.removeAt(oldIndex);
-    tasks.insert(newIndex, task);
 
-    for (int i = 0; i < tasks.length; i++) {
-      tasks[i].order = i;
-      await tasks[i].save();
+    Task movedTask = currentTabTasks.removeAt(oldIndex);
+    currentTabTasks.insert(newIndex, movedTask);
+
+    for (int i = 0; i < currentTabTasks.length; i++) {
+      currentTabTasks[i].order = i;
     }
 
-    tasks.refresh();
-  }
+    try {
+      await Future.wait(currentTabTasks.map((task) => task.save()).toList());
+    } catch (e) {
+      DialogUtils.showSnackbar("Error saving tasks: $e", isError: true);
 
-  void reloadTasks() async {
-    final box = await Hive.openBox<Task>('tasks');
-    tasks.assignAll(box.values.toList());
+      return;
+    }
+
+    tasks.assignAll([...currentTabTasks, ...otherTabTasks]);
     tasks.sort((a, b) => a.order.compareTo(b.order));
     tasks.refresh();
   }
