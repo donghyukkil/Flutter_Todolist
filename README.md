@@ -1,3 +1,7 @@
+<p align="center">
+     <img src="./assets/icon.png" width="300" height="300">
+</p>
+
 # 목차
 
 - [프로젝트 소개](#프로젝트-소개)
